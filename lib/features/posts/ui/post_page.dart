@@ -73,11 +73,11 @@ class _PostPageState extends State<PostPage> {
               if (attemptsLeft == 0) {
                 showRetryMessage = true;
                 timer?.cancel(); // Stop the timer when max attempts are reached
+              } else if (state is PostFetchingSuccessfulState) {
+                // Cancel the timer if data is successfully fetched
+                timer?.cancel();
               }
             });
-          } else if (state is PostFetchingSuccessfulState) {
-            // Cancel the timer if data is successfully fetched
-            timer?.cancel();
           }
         },
         builder: (context, state) {
