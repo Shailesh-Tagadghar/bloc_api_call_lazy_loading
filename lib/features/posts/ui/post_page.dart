@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:bloc_api_call_lazy_loading/features/posts/bloc/post_bloc.dart';
+import 'package:bloc_api_call_lazy_loading/features/posts/repos/post_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,37 +14,39 @@ class PostPage extends StatefulWidget {
 
 class _PostPageState extends State<PostPage> {
   final PostBloc postBloc = PostBloc();
-  final int maxAttempts = 3; // Max retry attempts
-  int attemptsLeft = 3;
+  bool showRetryMessage = false; // State to show retry message
+  Timer? timer; // Timer for delaying the retry message
+  int attemptsLeft = PostRepo.maxRetries;
 
   @override
   void initState() {
-    attemptsLeft = maxAttempts;
     super.initState();
+    fetchPosts();
+    startRetryTimer(); // Start the timer on page load
   }
 
-  void _fetchPosts() {
-    if (attemptsLeft > 0) {
-      // Trigger API fetch
-      postBloc.add(PostInitialFetchEvent());
+  void fetchPosts() {
+    setState(() {
+      showRetryMessage = false;
+      attemptsLeft = PostRepo.maxRetries;
+    });
+    postBloc.add(PostInitialFetchEvent());
+  }
+
+  void startRetryTimer() {
+    timer?.cancel(); // Cancel any existing timer
+    timer = Timer(Duration(seconds: 20), () {
+      // After 20 seconds, show the retry message if data hasn't loaded
       setState(() {
-        attemptsLeft--;
+        showRetryMessage = true;
       });
-    }
+    });
   }
 
-  void _showErrorMessage(BuildContext context, int attemptsLeft) {
-    final message = attemptsLeft > 0
-        ? 'Failed to fetch API data. Attempts left: $attemptsLeft'
-        : 'Failed to fetch API. Please check again after some time.';
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 2),
-      ),
-    );
+  @override
+  void dispose() {
+    timer?.cancel(); // Clean up the timer when the widget is disposed
+    super.dispose();
   }
 
   @override
@@ -63,81 +68,84 @@ class _PostPageState extends State<PostPage> {
         buildWhen: (previous, current) => current is! PostActionState,
         listener: (context, state) {
           if (state is PostFechingErrorState) {
-            _showErrorMessage(context, attemptsLeft);
+            setState(() {
+              attemptsLeft--;
+              if (attemptsLeft == 0) {
+                showRetryMessage = true;
+                timer?.cancel(); // Stop the timer when max attempts are reached
+              }
+            });
+          } else if (state is PostFetchingSuccessfulState) {
+            // Cancel the timer if data is successfully fetched
+            timer?.cancel();
           }
         },
         builder: (context, state) {
-          return Column(
-            children: [
-              Expanded(
-                child: state is PostFechingLoadingState
-                    ? const Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : state is PostFetchingSuccessfulState
-                        ? ListView.builder(
-                            itemCount: state.posts.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                padding: EdgeInsets.all(16),
-                                margin: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.blueGrey[700],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'id : ${state.posts[index].id}',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text(
-                                      'title : ${state.posts[index].title}',
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Center(
-                            child: Text(
-                              attemptsLeft == 0
-                                  ? 'Failed to fetch posts. Try again later.'
-                                  : 'Press the button to fetch posts',
-                              style: TextStyle(fontSize: 16),
-                            ),
+          if (showRetryMessage) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Failed to fetch data. Please retry after some time.',
+                    style: TextStyle(fontSize: 16, color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: fetchPosts,
+                    child: Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          switch (state.runtimeType) {
+            case PostFechingLoadingState:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            case PostFetchingSuccessfulState:
+              final successState = state as PostFetchingSuccessfulState;
+              return ListView.builder(
+                itemCount: successState.posts.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    padding: EdgeInsets.all(16),
+                    margin: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey[700],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'id : ${successState.posts[index].id}',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
                           ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: attemptsLeft > 0 ? _fetchPosts : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text(
-                    attemptsLeft > 0
-                        ? 'Fetch Posts (Attempts Left: $attemptsLeft)'
-                        : 'Max Attempts Reached',
-                  ),
-                ),
-              ),
-            ],
-          );
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'title : ${successState.posts[index].title}',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            default:
+              return const SizedBox();
+          }
         },
       ),
     );

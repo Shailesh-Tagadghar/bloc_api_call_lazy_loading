@@ -1,32 +1,21 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:bloc_api_call_lazy_loading/features/posts/model/post_model.dart';
 import 'package:http/http.dart' as http;
 
 class PostRepo {
+  static const int maxRetries = 3; // Maximum number of retry attempts
   static Future<List<PostModel>> fetchPost() async {
     var client = http.Client();
-    const int maxRetries = 3; // Maximum number of retry attempts
     int attempt = 0;
-
-    // Define the incorrect and correct URLs
-    const String wrongUrl =
-        'https://jsonplaceholder.typicode.com/wrong_endpoint';
-    const String correctUrl = 'https://jsonplaceholder.typicode.com/posts';
 
     while (attempt < maxRetries) {
       try {
-        // Increment the attempt counter
         attempt++;
 
-        // Use the incorrect URL for the first two attempts, then switch to the correct URL
-        var url = attempt < 3 ? wrongUrl : correctUrl;
-
         // Make the API call
-        var response = await client.get(Uri.parse(url));
-        // var response = await client
-        //     .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
+        var response = await client
+            .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
 
         if (response.statusCode == 200) {
           // Parse and return the data if the response is successful
@@ -42,18 +31,17 @@ class PostRepo {
       } catch (e) {
         log("Attempt $attempt failed: $e");
 
-        // If we've exhausted all retries, rethrow the exception
         if (attempt == maxRetries) {
-          log("Max retry attempts reached. Failed to fetch posts.");
-          rethrow;
+          log("Max retry attempts reached. User should retry after some time.");
+          throw Exception(
+              "Max retry attempts reached. Please retry after some time.");
         }
 
-        // Optional: Add a delay before retrying
+        // Add a delay before retrying
         await Future.delayed(Duration(seconds: 2));
       }
     }
 
-    // Return an empty list if all attempts fail
-    return [];
+    return []; // This will only execute if all attempts fail, returning an empty list
   }
 }
