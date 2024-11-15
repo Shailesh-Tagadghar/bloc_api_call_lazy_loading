@@ -7,21 +7,44 @@ import 'package:http/http.dart' as http;
 class PostRepo {
   static Future<List<PostModel>> fetchPost() async {
     var client = http.Client();
-    try {
-      List<PostModel> posts = [];
-      var response = await client
-          .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
+    const int maxRetries = 3; // Maximum number of retry attempts
+    int attempt = 0;
 
-      List result = jsonDecode(response.body);
+    while (attempt < maxRetries) {
+      try {
+        // Increment the attempt counter
+        attempt++;
 
-      for (var i = 0; i < result.length; i++) {
-        PostModel post = PostModel.fromMap(result[i] as Map<String, dynamic>);
-        posts.add(post);
+        // Make the API call
+        var response = await client
+            .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
+
+        if (response.statusCode == 200) {
+          // Parse and return the data if the response is successful
+          List result = jsonDecode(response.body);
+          List<PostModel> posts = result
+              .map((data) => PostModel.fromMap(data as Map<String, dynamic>))
+              .toList();
+          return posts;
+        } else {
+          log("Error: ${response.statusCode}");
+          throw Exception("Failed to fetch posts");
+        }
+      } catch (e) {
+        log("Attempt $attempt failed: $e");
+
+        // If we've exhausted all retries, rethrow the exception
+        if (attempt == maxRetries) {
+          log("Max retry attempts reached. Failed to fetch posts.");
+          rethrow;
+        }
+
+        // Optional: Add a delay before retrying
+        await Future.delayed(Duration(seconds: 2));
       }
-      return posts;
-    } catch (e) {
-      log(e.toString());
-      return [];
     }
+
+    // Return an empty list if all attempts fail
+    return [];
   }
 }

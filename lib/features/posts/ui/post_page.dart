@@ -11,11 +11,37 @@ class PostPage extends StatefulWidget {
 
 class _PostPageState extends State<PostPage> {
   final PostBloc postBloc = PostBloc();
+  final int maxAttempts = 3; // Max retry attempts
+  int attemptsLeft = 3;
 
   @override
   void initState() {
-    postBloc.add(PostInitialFetchEvent());
+    attemptsLeft = maxAttempts;
     super.initState();
+  }
+
+  void _fetchPosts() {
+    if (attemptsLeft > 0) {
+      // Trigger API fetch
+      postBloc.add(PostInitialFetchEvent());
+      setState(() {
+        attemptsLeft--;
+      });
+    }
+  }
+
+  void _showErrorMessage(BuildContext context, int attemptsLeft) {
+    final message = attemptsLeft > 0
+        ? 'Failed to fetch API data. Attempts left: $attemptsLeft'
+        : 'Failed to fetch API. Please check again after some time.';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -35,57 +61,83 @@ class _PostPageState extends State<PostPage> {
         bloc: postBloc,
         listenWhen: (previous, current) => current is PostActionState,
         buildWhen: (previous, current) => current is! PostActionState,
-        listener: (context, state) {},
-        builder: (context, state) {
-          switch (state.runtimeType) {
-            case PostFechingLoadingState:
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            case PostFetchingSuccessfulState:
-              final successState = state as PostFetchingSuccessfulState;
-              return Container(
-                child: ListView.builder(
-                  itemCount: successState.posts.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      padding: EdgeInsets.all(16),
-                      margin: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey[700],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'id : ${successState.posts[index].id}',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            'title : ${successState.posts[index].title}',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              );
-            default:
-              return const SizedBox();
+        listener: (context, state) {
+          if (state is PostFechingErrorState) {
+            _showErrorMessage(context, attemptsLeft);
           }
+        },
+        builder: (context, state) {
+          return Column(
+            children: [
+              Expanded(
+                child: state is PostFechingLoadingState
+                    ? const Center(
+                        child: CircularProgressIndicator(),
+                      )
+                    : state is PostFetchingSuccessfulState
+                        ? ListView.builder(
+                            itemCount: state.posts.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                padding: EdgeInsets.all(16),
+                                margin: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey[700],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'id : ${state.posts[index].id}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
+                                    Text(
+                                      'title : ${state.posts[index].title}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                        : Center(
+                            child: Text(
+                              attemptsLeft == 0
+                                  ? 'Failed to fetch posts. Try again later.'
+                                  : 'Press the button to fetch posts',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: attemptsLeft > 0 ? _fetchPosts : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(
+                    attemptsLeft > 0
+                        ? 'Fetch Posts (Attempts Left: $attemptsLeft)'
+                        : 'Max Attempts Reached',
+                  ),
+                ),
+              ),
+            ],
+          );
         },
       ),
     );
