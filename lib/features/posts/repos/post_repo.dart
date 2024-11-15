@@ -10,14 +10,23 @@ class PostRepo {
     const int maxRetries = 3; // Maximum number of retry attempts
     int attempt = 0;
 
+    // Define the incorrect and correct URLs
+    const String wrongUrl =
+        'https://jsonplaceholder.typicode.com/wrong_endpoint';
+    const String correctUrl = 'https://jsonplaceholder.typicode.com/posts';
+
     while (attempt < maxRetries) {
       try {
         // Increment the attempt counter
         attempt++;
 
+        // Use the incorrect URL for the first two attempts, then switch to the correct URL
+        var url = attempt < 3 ? wrongUrl : correctUrl;
+
         // Make the API call
-        var response = await client
-            .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
+        var response = await client.get(Uri.parse(url));
+        // var response = await client
+        //     .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
 
         if (response.statusCode == 200) {
           // Parse and return the data if the response is successful
