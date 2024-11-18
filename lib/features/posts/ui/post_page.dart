@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_api_call_lazy_loading/features/posts/bloc/post_bloc.dart';
 import 'package:bloc_api_call_lazy_loading/features/posts/repos/post_repo.dart';
+import 'package:bloc_api_call_lazy_loading/features/posts/ui/product_lazy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -54,7 +55,14 @@ class _PostPageState extends State<PostPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Posts'),
+        title: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProductLazy()),
+              );
+            },
+            child: Text('Posts')),
         centerTitle: true,
         titleTextStyle: TextStyle(
           color: Colors.white,
