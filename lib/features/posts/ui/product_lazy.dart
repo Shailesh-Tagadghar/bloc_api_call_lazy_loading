@@ -21,7 +21,7 @@ class _ProductLazyState extends State<ProductLazy> {
     // TODO: implement initState
     super.initState();
     scrollController.addListener(_scrollLister);
-    fetchPosts();
+    fetchLazyPosts();
   }
 
   @override
@@ -96,7 +96,7 @@ class _ProductLazyState extends State<ProductLazy> {
     );
   }
 
-  Future<void> fetchPosts() async {
+  Future<void> fetchLazyPosts() async {
     final url =
         "https://techcrunch.com/wp-json/wp/v2/posts?context=embed&per_page=10&page=$page";
     print('url : $url');
@@ -120,7 +120,7 @@ class _ProductLazyState extends State<ProductLazy> {
         isLoadingMore = true;
       });
       page = page + 1;
-      await fetchPosts();
+      await fetchLazyPosts();
       setState(() {
         isLoadingMore = false;
       });
