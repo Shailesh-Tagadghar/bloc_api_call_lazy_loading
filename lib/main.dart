@@ -1,7 +1,5 @@
-import 'package:bloc_api_call_lazy_loading/features/posts/bloc/post_bloc.dart';
-import 'package:bloc_api_call_lazy_loading/features/posts/ui/post_page.dart';
+import 'package:bloc_api_call_lazy_loading/Routes/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(const BlocApp());
@@ -12,12 +10,10 @@ class BlocApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => PostBloc()..add(PostInitialFetchEvent()),
-      child: const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: PostPage(),
-      ),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      onGenerateRoute: AppRoutes.generateRoute, // Set up the routes
+      initialRoute: AppRoutes.home, // Set the initial screen route
     );
   }
 }

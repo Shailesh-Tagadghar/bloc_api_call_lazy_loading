@@ -1,5 +1,6 @@
-import 'package:bloc_api_call_lazy_loading/features/posts/bloc/post_bloc.dart';
-import 'package:bloc_api_call_lazy_loading/features/posts/ui/product_lazy.dart';
+import 'package:bloc_api_call_lazy_loading/Bloc/Post/post_bloc.dart';
+import 'package:bloc_api_call_lazy_loading/Presentation/Lazy_Loading/product_lazy.dart';
+import 'package:bloc_api_call_lazy_loading/Routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,10 +16,7 @@ class PostPage extends StatelessWidget {
         ),
         title: GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProductLazy()),
-              );
+              Navigator.pushNamed(context, AppRoutes.lazyLoading);
             },
             child: const Text('Posts')),
         centerTitle: true,
@@ -113,11 +111,7 @@ class PostPage extends StatelessWidget {
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const PostPage()),
-                        ); // Navigate back or retry later
+                        Navigator.pushNamed(context, AppRoutes.home);
                       },
                       child: const Text('Go Back'),
                     ),
