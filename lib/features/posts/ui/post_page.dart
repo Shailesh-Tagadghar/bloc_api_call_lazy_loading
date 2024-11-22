@@ -10,6 +10,9 @@ class PostPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
         title: GestureDetector(
             onTap: () {
               Navigator.push(
@@ -81,17 +84,42 @@ class PostPage extends StatelessWidget {
                       Text('Attempts left: ${state.attemptsLeft}'),
                       const SizedBox(height: 10),
                       ElevatedButton(
-                        onPressed: () {
-                          context.read<PostBloc>().add(PostInitialFetchEvent());
-                        },
-                        child: const Text('Retry'),
+                        onPressed: state.isRetrying
+                            ? null // Disable button during retry
+                            : () {
+                                context.read<PostBloc>().add(PostRetryEvent());
+                              },
+                        style: ButtonStyle(
+                          backgroundColor: state.isRetrying
+                              ? WidgetStateProperty.all(Colors.grey)
+                              : WidgetStateProperty.all(Colors.blue),
+                        ),
+                        child: state.isRetrying
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Retry',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ] else ...[
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(
-                              context); // Navigate back or retry later
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const PostPage()),
+                          ); // Navigate back or retry later
                         },
                         child: const Text('Go Back'),
                       ),

@@ -11,40 +11,49 @@ part 'post_state.dart';
 
 class PostBloc extends Bloc<PostEvent, PostState> {
   final int maxRetries = 3;
+  int attempts = 0; // Track retry attempts
+
   PostBloc() : super(PostInitial()) {
     on<PostInitialFetchEvent>(postInitialFetchEvent);
+    on<PostRetryEvent>(_postRetryEvent); // Add handler for retry event
   }
 
   FutureOr<void> postInitialFetchEvent(
       PostInitialFetchEvent event, Emitter<PostState> emit) async {
-    // emit(PostFechingLoadingState());
-    int attempts = 0;
+    emit(PostFechingLoadingState());
+    await _fetchPosts(emit);
+  }
 
-    // List<PostModel> posts = await PostRepo.fetchPost();
+  FutureOr<void> _postRetryEvent(
+      PostRetryEvent event, Emitter<PostState> emit) async {
+    emit(PostFechingErrorState(
+      message: 'Retrying...',
+      attemptsLeft: maxRetries - attempts,
+      isRetrying: true,
+    )); // Indicate retry in progress
+    await _fetchPosts(emit);
+  }
 
-    // emit(PostFetchingSuccessfulState(posts: posts));
+  Future<void> _fetchPosts(Emitter<PostState> emit) async {
+    if (attempts >= maxRetries) {
+      emit(PostFechingErrorState(
+        message: 'Failed to fetch posts after $maxRetries attempts.',
+        attemptsLeft: 0,
+      ));
+      return;
+    }
 
-    while (attempts < maxRetries) {
-      attempts++;
-      emit(PostFechingLoadingState());
-      try {
-        List<PostModel> posts = await PostRepo.fetchPost();
-        emit(PostFetchingSuccessfulState(posts: posts));
-        return; // Exit the loop on success
-      } catch (e) {
-        if (attempts == maxRetries) {
-          emit(PostFechingErrorState(
-            message: 'Failed to fetch posts after $maxRetries attempts.',
-            attemptsLeft: 0,
-          ));
-        } else {
-          emit(PostFechingErrorState(
-            message: 'Failed to fetch data. Retrying...',
-            attemptsLeft: maxRetries - attempts,
-          ));
-        }
-        await Future.delayed(Duration(seconds: 3)); // Delay before retrying
-      }
+    attempts++; // Increment attempts on each fetch
+    try {
+      List<PostModel> posts = await PostRepo.fetchPost();
+      emit(PostFetchingSuccessfulState(posts: posts));
+      attempts = 0; // Reset attempts on success
+    } catch (e) {
+      emit(PostFechingErrorState(
+        message: 'Failed to fetch data. Please retry.',
+        attemptsLeft: maxRetries - attempts,
+        isRetrying: false,
+      ));
     }
   }
 }

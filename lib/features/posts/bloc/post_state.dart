@@ -20,6 +20,11 @@ class PostFetchingSuccessfulState extends PostState {
 class PostFechingErrorState extends PostState {
   final String message;
   final int attemptsLeft;
+  final bool isRetrying; // Track if retry is in progress
 
-  PostFechingErrorState({required this.message, required this.attemptsLeft});
+  PostFechingErrorState({
+    required this.message,
+    required this.attemptsLeft,
+    this.isRetrying = false,
+  });
 }
