@@ -14,11 +14,11 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   int attempts = 0; // Track retry attempts
 
   PostBloc() : super(PostInitial()) {
-    on<PostInitialFetchEvent>(postInitialFetchEvent);
+    on<PostInitialFetchEvent>(_postInitialFetchEvent);
     on<PostRetryEvent>(_postRetryEvent); // Add handler for retry event
   }
 
-  FutureOr<void> postInitialFetchEvent(
+  FutureOr<void> _postInitialFetchEvent(
       PostInitialFetchEvent event, Emitter<PostState> emit) async {
     emit(PostFechingLoadingState());
     await _fetchPosts(emit);
