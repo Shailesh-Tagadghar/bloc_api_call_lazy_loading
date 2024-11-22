@@ -9,17 +9,17 @@ class PostInitial extends PostState {}
 
 class PostFechingLoadingState extends PostState {}
 
-class PostFechingErrorState extends PostState {
-  final String message;
-  final int attemptsLeft;
-
-  PostFechingErrorState({required this.message, required this.attemptsLeft});
-}
-
 class PostFetchingSuccessfulState extends PostState {
   final List<PostModel> posts;
 
   PostFetchingSuccessfulState({
     required this.posts,
   });
+}
+
+class PostFechingErrorState extends PostState {
+  final String message;
+  final int attemptsLeft;
+
+  PostFechingErrorState({required this.message, required this.attemptsLeft});
 }

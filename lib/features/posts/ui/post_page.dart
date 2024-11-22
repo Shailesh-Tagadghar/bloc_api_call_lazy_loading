@@ -36,8 +36,8 @@ class PostPage extends StatelessWidget {
                 itemCount: state.posts.length,
                 itemBuilder: (context, index) {
                   return Container(
-                    padding: EdgeInsets.all(16),
-                    margin: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.blueGrey[700],
                       borderRadius: BorderRadius.circular(12),
@@ -48,16 +48,16 @@ class PostPage extends StatelessWidget {
                         Text(
                           'id : ${state.posts[index].id}',
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
                           'title : ${state.posts[index].title}',
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
                           ),
@@ -74,7 +74,7 @@ class PostPage extends StatelessWidget {
                   children: [
                     Text(
                       state.message,
-                      style: TextStyle(color: Colors.red, fontSize: 16),
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                     if (state.attemptsLeft > 0) ...[

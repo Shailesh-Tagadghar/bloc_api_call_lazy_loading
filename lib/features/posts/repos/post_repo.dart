@@ -7,7 +7,7 @@ class PostRepo {
     var client = http.Client();
     try {
       var response = await client
-          .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
+          .get(Uri.parse('https://jsonplaceholder.typicode.com/postss'));
       if (response.statusCode == 200) {
         List result = jsonDecode(response.body);
         return result
