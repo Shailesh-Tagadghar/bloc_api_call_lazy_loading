@@ -28,109 +28,106 @@ class PostPage extends StatelessWidget {
         ),
         backgroundColor: Colors.blue[600],
       ),
-      body: BlocProvider(
-        create: (_) => PostBloc()..add(PostInitialFetchEvent()),
-        child: BlocBuilder<PostBloc, PostState>(
-          builder: (context, state) {
-            if (state is PostFechingLoadingState) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is PostFetchingSuccessfulState) {
-              return ListView.builder(
-                itemCount: state.posts.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blueGrey[700],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'id : ${state.posts[index].id}',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
+      body: BlocBuilder<PostBloc, PostState>(
+        builder: (context, state) {
+          if (state is PostFechingLoadingState) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is PostFetchingSuccessfulState) {
+            return ListView.builder(
+              itemCount: state.posts.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey[700],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'id : ${state.posts[index].id}',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'title : ${state.posts[index].title}',
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            } else if (state is PostFechingErrorState) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.red, fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (state.attemptsLeft > 0) ...[
-                      Text('Attempts left: ${state.attemptsLeft}'),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: state.isRetrying
-                            ? null // Disable button during retry
-                            : () {
-                                context.read<PostBloc>().add(PostRetryEvent());
-                              },
-                        style: ButtonStyle(
-                          backgroundColor: state.isRetrying
-                              ? WidgetStateProperty.all(Colors.grey)
-                              : WidgetStateProperty.all(Colors.blue),
-                        ),
-                        child: state.isRetrying
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Retry',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                ),
-                              ),
                       ),
-                    ] else ...[
                       const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const PostPage()),
-                          ); // Navigate back or retry later
-                        },
-                        child: const Text('Go Back'),
+                      Text(
+                        'title : ${state.posts[index].title}',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
+                  ),
+                );
+              },
+            );
+          } else if (state is PostFechingErrorState) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (state.attemptsLeft > 0) ...[
+                    Text('Attempts left: ${state.attemptsLeft}'),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: state.isRetrying
+                          ? null // Disable button during retry
+                          : () {
+                              context.read<PostBloc>().add(PostRetryEvent());
+                            },
+                      style: ButtonStyle(
+                        backgroundColor: state.isRetrying
+                            ? WidgetStateProperty.all(Colors.grey)
+                            : WidgetStateProperty.all(Colors.blue),
+                      ),
+                      child: state.isRetrying
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Retry',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const PostPage()),
+                        ); // Navigate back or retry later
+                      },
+                      child: const Text('Go Back'),
+                    ),
                   ],
-                ),
-              );
-            }
-            return const SizedBox();
-          },
-        ),
+                ],
+              ),
+            );
+          }
+          return const SizedBox();
+        },
       ),
     );
   }
