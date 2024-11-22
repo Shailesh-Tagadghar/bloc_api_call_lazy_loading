@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bloc_api_call_lazy_loading/Data/API/api_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,14 +30,14 @@ class _ProductLazyState extends State<ProductLazy> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Lazy Loading Data'),
+        title: const Text('Lazy Loading Data'),
         centerTitle: true,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 20,
         ),
         backgroundColor: Colors.blue[600],
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(
           itemCount: isLoadingMore ? posts.length + 1 : posts.length,
@@ -47,8 +48,8 @@ class _ProductLazyState extends State<ProductLazy> {
               final id = post['id'];
               final title = post['title']['rendered'];
               return Container(
-                padding: EdgeInsets.all(16),
-                margin: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.blueGrey[700],
                   borderRadius: BorderRadius.circular(12),
@@ -62,24 +63,24 @@ class _ProductLazyState extends State<ProductLazy> {
                           backgroundColor: Colors.white,
                           child: Text('${index + 1}'),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 10,
                         ),
                         Text(
                           'id : $id',
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       'title : ${title}',
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         color: Colors.white,
                       ),
@@ -88,7 +89,7 @@ class _ProductLazyState extends State<ProductLazy> {
                 ),
               );
             } else {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -97,8 +98,9 @@ class _ProductLazyState extends State<ProductLazy> {
   }
 
   Future<void> fetchLazyPosts() async {
-    final url =
-        "https://techcrunch.com/wp-json/wp/v2/posts?context=embed&per_page=10&page=$page";
+    String url = fetchPostsUrl(page);
+    // final url =
+    //     "https://techcrunch.com/wp-json/wp/v2/posts?context=embed&per_page=10&page=$page";
     print('url : $url');
     final uri = Uri.parse(url);
     final response = await http.get(uri);
