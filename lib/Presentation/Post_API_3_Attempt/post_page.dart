@@ -74,7 +74,14 @@ class PostPage extends StatelessWidget {
                   builder: (context) {
                     return AlertDialog(
                       title: const Text('Error'),
-                      content: Text(state.message),
+                      content: Text(
+                        state.message,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                        ),
+                        // textAlign: TextAlign.center,
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -94,11 +101,11 @@ class PostPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: Colors.red, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
+                  // Text(
+                  //   state.message,
+                  //   style: const TextStyle(color: Colors.red, fontSize: 16),
+                  //   textAlign: TextAlign.center,
+                  // ),
                   if (state.attemptsLeft > 0) ...[
                     const SizedBox(height: 10),
                     ElevatedButton(

@@ -66,7 +66,8 @@ class PostBloc extends Bloc<PostEvent, PostState> {
       ));
     } catch (e) {
       emit(PostFechingErrorState(
-        message: 'Something went wrong. Please try again later.',
+        message: 'You have reach the maximum attempts, Please try again later.',
+        // message: 'Something went wrong. Please try again later.',
         attemptsLeft: maxRetries - attempts,
         showAlert: attempts >= maxRetries - 0, // Alert after last attempt
       ));
