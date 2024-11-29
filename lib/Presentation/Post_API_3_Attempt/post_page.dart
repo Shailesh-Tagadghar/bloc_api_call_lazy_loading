@@ -66,6 +66,30 @@ class PostPage extends StatelessWidget {
               },
             );
           } else if (state is PostFechingErrorState) {
+            // Show alert dialog if showAlert is true
+            if (state.showAlert) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Error'),
+                      content: Text(state.message),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                            Navigator.pushNamed(context, AppRoutes.home);
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              });
+            }
+
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -76,7 +100,6 @@ class PostPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   if (state.attemptsLeft > 0) ...[
-                    Text('Attempts left: ${state.attemptsLeft}'),
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: state.isRetrying
@@ -85,9 +108,9 @@ class PostPage extends StatelessWidget {
                               context.read<PostBloc>().add(PostRetryEvent());
                             },
                       style: ButtonStyle(
-                        backgroundColor: state.isRetrying
-                            ? WidgetStateProperty.all(Colors.grey)
-                            : WidgetStateProperty.all(Colors.blue),
+                        backgroundColor: WidgetStateProperty.all(
+                          state.isRetrying ? Colors.grey : Colors.blue,
+                        ),
                       ),
                       child: state.isRetrying
                           ? const SizedBox(
@@ -98,8 +121,8 @@ class PostPage extends StatelessWidget {
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text(
-                              'Retry',
+                          : Text(
+                              'Attempts left: ${state.attemptsLeft}',
                               style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,
@@ -112,7 +135,7 @@ class PostPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushNamed(context, AppRoutes.home);
                       },
-                      child: const Text('Go Back'),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ],

@@ -21,10 +21,12 @@ class PostFechingErrorState extends PostState {
   final String message;
   final int attemptsLeft;
   final bool isRetrying; // Track if retry is in progress
+  final bool showAlert;
 
   PostFechingErrorState({
     required this.message,
     required this.attemptsLeft,
     this.isRetrying = false,
+    this.showAlert = false,
   });
 }
