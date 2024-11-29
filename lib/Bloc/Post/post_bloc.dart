@@ -25,21 +25,14 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     await _fetchPosts(emit);
   }
 
-  // FutureOr<void> _postRetryEvent(
-  //     PostRetryEvent event, Emitter<PostState> emit) async {
-  //   emit(PostFechingErrorState(
-  //     message: 'Retrying...',
-  //     attemptsLeft: maxRetries - attempts,
-  //     isRetrying: true,
-  //   )); // Indicate retry in progress
-  //   await _fetchPosts(emit);
-  // }
-
   FutureOr<void> _postRetryEvent(
       PostRetryEvent event, Emitter<PostState> emit) async {
-    emit(PostFechingLoadingState()); // Emit loading state
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate loading
-    await _fetchPosts(emit); // Fetch posts again
+    emit(PostFechingErrorState(
+      message: 'Retrying...',
+      attemptsLeft: maxRetries - attempts,
+      isRetrying: true,
+    )); // Indicate retry in progress
+    await _fetchPosts(emit);
   }
 
   Future<void> _fetchPosts(Emitter<PostState> emit) async {
